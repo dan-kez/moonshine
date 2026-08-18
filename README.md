@@ -109,6 +109,24 @@ These steps apply to every installation method above (the service is a systemd u
    ```
    Moonshine creates a virtual gamepad per streamed controller, and the streamed game must be able to read it. When streaming while a desktop session is active, your user is already granted access to input devices as the active seat, so this step is not needed there. Run `moonshine healthcheck` to verify — it reports an `input group` warning if the group is missing.
 
+### Tray indicator (optional)
+
+On a desktop, `moonshine-tray` sits in the system tray as a crescent whose colour tells you what the daemon is doing — grey when stopped, amber while starting, green when idle and waiting for a client, blue while streaming. Right-clicking it offers start, stop and restart, opens the log, and opens the [pairing page](#pairing-with-a-client) without having to remember its address.
+
+The packages install it enabled, so it starts with your next desktop session. To start it right away:
+
+```sh
+systemctl --user start moonshine-tray
+```
+
+Note the `--user`: unlike the server, the tray is a systemd *user* unit, since it belongs to your desktop session. It is bound to `graphical-session.target` and so never starts on a headless host, even when enabled. Starting, stopping and restarting the server from the menu asks for authentication through your desktop's usual polkit prompt.
+
+If you would rather not have it at all:
+
+```sh
+sudo systemctl --global disable moonshine-tray.service
+```
+
 ### Source
 
 The following dependencies are required to build and run:
@@ -168,7 +186,7 @@ When using the AUR package, it defaults to `$XDG_CONFIG_HOME/moonshine/config.to
 ### Pairing with a client
 
 When you connect with Moonlight for the first time, it will show a PIN.
-A notification will appear on the host that you can click to open the pairing page, or you can visit it manually at http://localhost:47989/pin .
+A notification will appear on the host that you can click to open the pairing page. You can also pick **Pair a client…** from the [tray indicator](#tray-indicator-optional), or visit it manually at http://localhost:47989/pin .
 
 You can also pair from the command line:
 

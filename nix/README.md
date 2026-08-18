@@ -4,8 +4,8 @@ This directory contains a [nix flake](https://wiki.nixos.org/wiki/Flakes) that b
 
 ## What you get
 
-- **A package**: the `moonshine` binary, the moonshine-wsi Vulkan layer, and the udev rules, built from this repository.
-- **A NixOS module**: a `services.moonshine` service that takes care of everything from the [installation steps](../README.md#installation): lingering, kernel modules, device permissions, and the systemd service.
+- **A package**: the `moonshine` and `moonshine-tray` binaries, the moonshine-wsi Vulkan layer, and the udev rules, built from this repository.
+- **A NixOS module**: a `services.moonshine` service that takes care of everything from the [installation steps](../README.md#installation): lingering, kernel modules, device permissions, and the systemd service. Set `services.moonshine.tray.enable` to also run the tray indicator in graphical sessions.
 - **A dev shell**: the full build environment for working on Moonshine.
 
 ## Building

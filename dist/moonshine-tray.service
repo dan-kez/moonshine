@@ -1,0 +1,16 @@
+[Unit]
+Description=Tray indicator for the moonshine streaming server
+# The tray needs a running desktop session to register its StatusNotifierItem.
+# Binding to graphical-session.target also means that on a headless host, where
+# that target is never reached, an enabled unit simply never starts.
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/moonshine-tray
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

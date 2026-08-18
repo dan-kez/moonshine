@@ -20,6 +20,8 @@ contents:
     dst: /usr/bin/moonshine
   - src: ./dist/start-moonshine.sh
     dst: /usr/bin/start-moonshine.sh
+  - src: ./target/release/moonshine-tray
+    dst: /usr/bin/moonshine-tray
   - src: ./target/release/libmoonshine_wsi.so
     dst: /usr/lib/moonshine/vulkan-layers/libmoonshine_wsi.so
   - src: ./dist/60-moonshine.rules
@@ -28,6 +30,9 @@ contents:
     dst: /usr/lib/modules-load.d/moonshine.conf
   - src: ./dist/moonshine@.service
     dst: /usr/lib/systemd/system/moonshine@.service
+  # The tray is a *user* unit, so it belongs in the user unit directory.
+  - src: ./dist/moonshine-tray.service
+    dst: /usr/lib/systemd/user/moonshine-tray.service
   - src: ./dist/VkLayer_moonshine_wsi.json
     dst: /usr/share/vulkan/implicit_layer.d/VkLayer_moonshine_wsi.json
   - src: ./dist/50-moonshine-inhibit-sleep.rules
@@ -44,6 +49,7 @@ contents:
 
 scripts:
   postinstall: ./dist/nfpm/postinstall.sh
+  preremove: ./dist/nfpm/preremove.sh
   postremove: ./dist/nfpm/postremove.sh
 
 # Dependency names differ per distro.

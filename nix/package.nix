@@ -29,6 +29,7 @@ let
       ../src
       ../moonshine-core
       ../moonshine-tools
+      ../moonshine-tray
       ../moonshine-wsi
       ../assets
       ../dist
@@ -127,6 +128,7 @@ rustPlatform.buildRustPackage {
     # moonshine-wsi cdylib in $out/lib; fail loudly if the layer is missing
     # (e.g. --workspace stopped covering it).
     test -f $out/lib/libmoonshine_wsi.so
+    test -f $out/bin/moonshine-tray
 
     # Vulkan implicit-layer manifest, pointed at the store path.
     install -Dm644 dist/VkLayer_moonshine_wsi.json \

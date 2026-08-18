@@ -18,6 +18,12 @@ systemd-sysusers 2>/dev/null || true
 modprobe uinput || true
 modprobe uhid || true
 
+# Enable the tray indicator for every user. It is bound to graphical-session.target,
+# so on a headless host this only creates the symlink and never starts anything.
+systemctl --global enable moonshine-tray.service 2>/dev/null || true
+
 echo "moonshine: enable for your user with:"
 echo "  sudo loginctl enable-linger <user>   # optional, for headless use"
 echo "  sudo systemctl enable --now moonshine@<user>"
+echo "moonshine: the tray indicator starts with your next desktop session,"
+echo "  or now with: systemctl --user start moonshine-tray"

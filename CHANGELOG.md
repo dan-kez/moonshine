@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `moonshine-tray`, a system tray indicator showing whether the daemon is stopped, starting, idle or streaming, with start/stop/restart, a log view, and a shortcut to the pairing page. Installed enabled as a systemd user unit, and available on NixOS via `services.moonshine.tray.enable`. (@dan-kez)
+
 ### Fixed
 
 - Read GOG install state from Heroic's `gog_store/installed.json`, which Heroic strips out of the library cache, so the Heroic scanner no longer skips every installed GOG game. (#169, @scottjab)

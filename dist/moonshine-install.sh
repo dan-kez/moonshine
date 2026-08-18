@@ -80,6 +80,8 @@ print_help() {
   echo "  --no-start       Do not start after install"
   echo "  --healthcheck    Run a health check after install (default: prompt)"
   echo "  --no-healthcheck Skip the health check"
+  echo "  --tray           Install the tray indicator (default: prompt)"
+  echo "  --no-tray        Do not install the tray indicator"
   echo "  --user USER      Install for this user (default: current user)"
   echo "  --help           Show this message"
   echo ""
@@ -112,6 +114,7 @@ ENABLE_ON_BOOT=""
 LINGER=""
 START_NOW=""
 HEALTHCHECK=""
+TRAY=""
 TARGET_USER=""
 
 while [[ $# -gt 0 ]]; do
@@ -125,6 +128,8 @@ while [[ $# -gt 0 ]]; do
     --no-start) START_NOW=false; shift ;;
     --healthcheck) HEALTHCHECK=true; shift ;;
     --no-healthcheck) HEALTHCHECK=false; shift ;;
+    --tray) TRAY=true; shift ;;
+    --no-tray) TRAY=false; shift ;;
     --user) TARGET_USER="$2"; shift 2 ;;
     *) die "unknown option: $1" ;;
   esac
@@ -155,6 +160,8 @@ if [[ "$UNINSTALL" == "true" ]]; then
   sudo rm -f /etc/polkit-1/rules.d/50-moonshine-inhibit-sleep.rules
   sudo rm -f /etc/profile.d/moonshine.sh
   sudo rm -f /etc/atomic-update.conf.d/moonshine.conf
+  sudo systemctl --global disable moonshine-tray.service 2>/dev/null || true
+  sudo rm -f /etc/systemd/user/moonshine-tray.service
   sudo systemctl daemon-reload || true
   sudo udevadm control --reload || true
 
@@ -230,6 +237,10 @@ if [[ -z "$HEALTHCHECK" ]]; then
   prompt "Run health check?" HEALTHCHECK Y
 fi
 
+if [[ -z "$TRAY" ]]; then
+  prompt "Install tray indicator?" TRAY Y
+fi
+
 # --- build and run privileged commands ---
 
 MOONSHINE_HOME="/opt/moonshine"
@@ -245,6 +256,7 @@ CMDS=(
   "mkdir -p /etc/sysusers.d"
   "mkdir -p /etc/vulkan/implicit_layer.d"
   "mkdir -p /etc/polkit-1/rules.d"
+  "mkdir -p /etc/systemd/user"
   # Deploy moonshine binary
   "cp '${S}/bin/moonshine' '${MOONSHINE_HOME}/bin/moonshine'"
   "chmod 755 '${MOONSHINE_HOME}/bin/moonshine'"
@@ -306,6 +318,16 @@ CMDS=(
 
 if $LINGER_NEEDED && [[ "$LINGER" == "true" ]]; then
   CMDS+=("loginctl enable-linger '${USER}' || true")
+fi
+
+if [[ "$TRAY" == "true" ]]; then
+  CMDS+=("cp '${S}/bin/moonshine-tray' '${MOONSHINE_HOME}/bin/moonshine-tray'")
+  CMDS+=("chmod 755 '${MOONSHINE_HOME}/bin/moonshine-tray'")
+  # The tray is a user unit, so it goes to /etc/systemd/user rather than /etc/systemd/system.
+  CMDS+=("sed 's|/usr/bin/moonshine-tray|${MOONSHINE_HOME}/bin/moonshine-tray|' '${S}/share/moonshine/moonshine-tray.service' > /etc/systemd/user/moonshine-tray.service")
+  # Enabling globally binds it to graphical-session.target for every user, which never
+  # activates on a headless host.
+  CMDS+=("systemctl --global enable moonshine-tray.service || true")
 fi
 
 if [[ "$HEALTHCHECK" == "true" ]]; then

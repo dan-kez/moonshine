@@ -118,6 +118,17 @@ in
         VPN-facing firewall.
       '';
     };
+
+    # Unlike the server, the tray is a systemd *user* service. The argument against
+    # user units at the top of this file does not apply to it: nothing about the tray
+    # depends on the config store path, and it has to live in the desktop session to
+    # reach that session's tray and polkit agent. Note that NixOS has no per-user unit
+    # scoping, so enabling this defines the unit for every user on the machine, not
+    # only `cfg.user` - it is bound to graphical-session.target, so it only ever
+    # starts for those who actually log into a desktop.
+    tray = {
+      enable = lib.mkEnableOption "the Moonshine tray indicator, showing server status in graphical sessions";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -216,6 +227,22 @@ in
           "video"
         ];
         ExecStart = "${lib.getExe cfg.package} ${configFile}";
+        Restart = "on-failure";
+        RestartSec = 5;
+      };
+    };
+
+    systemd.user.services.moonshine-tray = lib.mkIf cfg.tray.enable {
+      description = "Tray indicator for the Moonshine streaming server";
+      # The tray registers a StatusNotifierItem, so it needs a desktop session.
+      partOf = [ "graphical-session.target" ];
+      after = [ "graphical-session.target" ];
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig = {
+        # This module runs the server as `moonshine.service` rather than as an
+        # instance of upstream's moonshine@ template, so the tray is told which
+        # unit to watch instead of deriving it from a user name.
+        ExecStart = "${lib.getExe' cfg.package "moonshine-tray"} --unit moonshine.service ${configFile}";
         Restart = "on-failure";
         RestartSec = 5;
       };
